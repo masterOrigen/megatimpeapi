@@ -1,0 +1,61 @@
+.App {
+  text-align: left;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.card {
+  transition: transform 0.2s;
+  border: none;
+  background-color: white;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+}
+
+.navbar {
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.card-title {
+  color: #666;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+h3 {
+  color: #333;
+  font-weight: 600;
+}
+
+.text-muted {
+  color: #6c757d !important;
+}
+
+.d-inline-block.mb-0 {
+  font-size: 17px;
+}
+:root {
+  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: transparent !important;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+}
+.mb-4.thetitulox {
+  font-size: 18px;
+  color: blue;
+  font-weight: bold;
+}
+.mt-4.abajo.btn.btn-primary {
+  margin: 0px !important;
+}
+.dropdown {
+  display: none;
+}

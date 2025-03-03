@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Dashboard from './components/Dashboard';
 import Brand from './components/Brand';
 import BrandComparison from './components/BrandComparison';
+import PDFAnalysis from './components/PDFAnalysis';
 import NavigationBar from './components/Navbar';
 import './App.css';
 
@@ -16,6 +17,7 @@ function App() {
           <Route path="/" element={<Dashboard />} />
           <Route path="/brand/:brandName" element={<Brand />} />
           <Route path="/comparison/:brands" element={<BrandComparison />} />
+          <Route path="/pdf-analysis" element={<PDFAnalysis />} />
         </Routes>
       </div>
     </Router>

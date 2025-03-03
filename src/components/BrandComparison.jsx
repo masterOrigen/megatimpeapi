@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Spinner, Button } from 'react-bootstrap';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartLine, faUsers, faMoneyBill, faArrowLeft, faFilePdf, faFileExcel } from '@fortawesome/free-solid-svg-icons';
+import { faChartLine, faUsers, faMoneyBill, faArrowLeft, faFilePdf, faRobot } from '@fortawesome/free-solid-svg-icons';
 import { supabase } from '../config/supabaseClient';
 import MetricCard from './MetricCard';
 import ChartComponent from './ChartComponent';
 import html2pdf from 'html2pdf.js';
-import * as XLSX from 'xlsx';
+import { jsPDF } from 'jspdf';
 
 const BrandComparison = () => {
     const { brands } = useParams();
@@ -89,57 +89,56 @@ const BrandComparison = () => {
     }, [brands]);
 
     const handleExportPDF = () => {
-        const element = document.getElementById('comparison-content');
-        const opt = {
-            margin: [0.5, 0.5, 0.5, 0.5],
-            filename: 'comparacion-marcas.pdf',
-            image: { type: 'jpeg', quality: 1 },
-            html2canvas: { 
-                scale: 2,
-                useCORS: true,
-                logging: true,
-                letterRendering: true
-            },
-            jsPDF: { 
-                unit: 'in', 
-                format: 'a4', 
-                orientation: 'landscape',
-                compress: true,
-                hotfixes: ['px_scaling']
-            },
-            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-        };
-
-        html2pdf().set(opt).from(element).save();
-    };
-
-    const handleExportExcel = () => {
-        const workbook = XLSX.utils.book_new();
-
-        brandsData.forEach(brandData => {
-            const sheetData = [
-                ['Marca:', brandData.brand],
-                [],
-                ['Métricas'],
-                ['VALUE TOTAL', Math.round(brandData.metrics.valueTotal).toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 })],
-                ['PUBLIC VALUE', Math.round(brandData.metrics.publicValue).toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 })],
-                ['TOTAL SOPORTES', brandData.metrics.totalSoportes],
-                [],
-                ['AGENCIAS DE MEDIOS'],
-                ['Agencia', 'Número de Soportes'],
-                ...brandData.mediaAgencyData.map(([agency, count]) => [agency, count]),
-                [],
-                ['TOP 10 SOPORTES'],
-                ['Soporte', 'Cantidad'],
-                ...brandData.supportData.map(([support, count]) => [support, count])
-            ];
-
-            const worksheet = XLSX.utils.aoa_to_sheet(sheetData);
-            XLSX.utils.book_append_sheet(workbook, worksheet, brandData.brand.slice(0, 31));
+        const doc = new jsPDF();
+        let yPos = 20;
+        const lineHeight = 10;
+        
+        brandsData.forEach((brandData, index) => {
+            // Add brand name as header
+            doc.setFontSize(16);
+            doc.text(brandData.brand, 20, yPos);
+            yPos += lineHeight * 2;
+            
+            // Add metrics
+            doc.setFontSize(12);
+            doc.text(`VALUE TOTAL: ${Math.round(brandData.metrics.valueTotal).toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 })}`, 20, yPos);
+            yPos += lineHeight;
+            doc.text(`PUBLIC VALUE: ${Math.round(brandData.metrics.publicValue).toLocaleString('es-CL', { style: 'currency', currency: 'CLP', maximumFractionDigits: 0 })}`, 20, yPos);
+            yPos += lineHeight;
+            doc.text(`TOTAL SOPORTES: ${brandData.metrics.totalSoportes}`, 20, yPos);
+            yPos += lineHeight * 2;
+            
+            // Add media agencies section
+            doc.setFontSize(14);
+            doc.text('AGENCIAS DE MEDIOS', 20, yPos);
+            yPos += lineHeight;
+            doc.setFontSize(12);
+            brandData.mediaAgencyData.forEach(([agency, count]) => {
+                doc.text(`${agency}: ${count} soportes`, 30, yPos);
+                yPos += lineHeight;
+            });
+            yPos += lineHeight;
+            
+            // Add supports section
+            doc.setFontSize(14);
+            doc.text('TOP 10 SOPORTES', 20, yPos);
+            yPos += lineHeight;
+            doc.setFontSize(12);
+            brandData.supportData.forEach(([support, count]) => {
+                doc.text(`${support}: ${count} productos`, 30, yPos);
+                yPos += lineHeight;
+            });
+            
+            // Add page break if not the last brand
+            if (index < brandsData.length - 1) {
+                doc.addPage();
+                yPos = 20;
+            }
         });
-
-        XLSX.writeFile(workbook, 'comparacion-marcas.xlsx');
+        
+        doc.save('comparacion-marcas.pdf');
     };
+
 
     return (
         <Container fluid>
@@ -157,22 +156,23 @@ const BrandComparison = () => {
                         <h2 className="d-inline-block mb-0">Estas comparando marcas</h2>
                     </div>
                     <div>
-                        <Button 
-                            variant="success" 
-                            onClick={handleExportExcel}
-                            disabled={loading}
-                            className="me-2"
-                        >
-                            <FontAwesomeIcon icon={faFileExcel} className="me-2" />
-                            Exportar a Excel
-                        </Button>
+
                         <Button 
                             variant="success" 
                             onClick={handleExportPDF}
                             disabled={loading}
+                            className="me-2"
                         >
                             <FontAwesomeIcon icon={faFilePdf} className="me-2" />
                             Exportar a PDF
+                        </Button>
+                        <Button 
+                            variant="primary" 
+                            onClick={() => navigate('/pdf-analysis')}
+                            disabled={loading}
+                        >
+                            <FontAwesomeIcon icon={faRobot} className="me-2" />
+                            Analizar PDF con IA
                         </Button>
                     </div>
                 </Col>
